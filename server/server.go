@@ -1,128 +1,113 @@
-package main
+package server
 
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
-	"net"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	_ "github.com/go-sql-driver/mysql"
-	"google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
-	pb "github.com/nawarajshah/grpc-post-service/pb"
+	"your-module-name/postpb"
 )
 
-const (
-	port       = ":50051"
-	dsn        = "nawaraj:nawaraj100@tcp(localhost:3306)/post_server"
-	createStmt = `CREATE TABLE IF NOT EXISTS posts (
-		postid CHAR(32) PRIMARY KEY,
-		title VARCHAR(250),
-		description TEXT,
-		created_by CHAR(32),
-		created_at BIGINT,
-		updated_at BIGINT
-	)`
-)
-
-type server struct {
-	pb.UnimplementedPostServiceServer
-	db *sql.DB
+type Server struct {
+	postpb.UnimplementedPostServiceServer
+	DB *sql.DB
 }
 
-func main() {
-	// Connect to MySQL
-	db, err := sql.Open("mysql", dsn)
-	if err != nil {
-		log.Fatalf("failed to connect to MySQL: %v", err)
-	}
-	defer db.Close()
-
-	// Create table if not exists
-	_, err = db.Exec(createStmt)
-	if err != nil {
-		log.Fatalf("failed to create table: %v", err)
-	}
-
-	lis, err := net.Listen("tcp", port)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-
-	s := grpc.NewServer()
-	pb.RegisterPostServiceServer(s, &server{db: db})
-	log.Printf("server listening at %v", lis.Addr())
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
-	}
+func NewServer(db *sql.DB) *Server {
+	return &Server{DB: db}
 }
 
-func (s *server) CreatePost(ctx context.Context, req *pb.CreatePostRequest) (*pb.CreatePostResponse, error) {
-	// Validate input
-	if req.Post.GetPostid() == "" || req.Post.GetTitle() == "" || len(req.Post.GetTitle()) > 100 || req.Post.GetDescription() == "" {
-		return nil, fmt.Errorf("validation error")
+// CreatePost creates a new post
+func (s *Server) CreatePost(ctx context.Context, req *postpb.CreatePostRequest) (*postpb.CreatePostResponse, error) {
+	post := req.GetPost()
+
+	if post.PostId == "" || post.Title == "" || post.Description == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "post_id, title, and description are required")
 	}
 
-	// Insert into database
-	_, err := s.db.Exec("INSERT INTO posts (postid, title, description, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
-		req.Post.GetPostid(),
-		req.Post.GetTitle(),
-		req.Post.GetDescription(),
-		req.Post.GetCreatedBy(),
-		req.Post.GetCreatedAt().Seconds,
-		req.Post.GetUpdatedAt().Seconds,
-	)
+	if len(post.Title) > 100 {
+		return nil, status.Errorf(codes.InvalidArgument, "title cannot exceed 100 characters")
+	}
+
+	createdAt := time.Now().Unix()
+	query := "INSERT INTO posts (postid, title, description, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)"
+	_, err := s.DB.ExecContext(ctx, query, post.PostId, post.Title, post.Description, post.CreatedBy, createdAt, createdAt)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "failed to insert post: %v", err)
 	}
 
-	return &pb.CreatePostResponse{Post: req.Post}, nil
+	return &postpb.CreatePostResponse{PostId: post.PostId}, nil
 }
 
-func (s *server) GetPost(ctx context.Context, req *pb.GetPostRequest) (*pb.GetPostResponse, error) {
-	row := s.db.QueryRow("SELECT postid, title, description, created_by, created_at, updated_at FROM posts WHERE postid = ?", req.GetPostid())
-	post := &pb.Post{}
-	var createdAt, updatedAt int64
-	if err := row.Scan(&post.Postid, &post.Title, &post.Description, &post.CreatedBy, &createdAt, &updatedAt); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("post not found")
-		}
-		return nil, err
+// ReadPost fetches a post by ID
+func (s *Server) ReadPost(ctx context.Context, req *postpb.ReadPostRequest) (*postpb.ReadPostResponse, error) {
+	postID := req.GetPostId()
+
+	query := "SELECT postid, title, description, created_by, created_at, updated_at FROM posts WHERE postid = ?"
+	row := s.DB.QueryRowContext(ctx, query, postID)
+
+	post := &postpb.Post{}
+	err := row.Scan(&post.PostId, &post.Title, &post.Description, &post.CreatedBy, &post.CreatedAt, &post.UpdatedAt)
+	if err == sql.ErrNoRows {
+		return nil, status.Errorf(codes.NotFound, "post not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to fetch post: %v", err)
 	}
-	post.CreatedAt = timestamppb.New(time.Unix(createdAt, 0))
-	post.UpdatedAt = timestamppb.New(time.Unix(updatedAt, 0))
-	return &pb.GetPostResponse{Post: post}, nil
+
+	return &postpb.ReadPostResponse{Post: post}, nil
 }
 
-func (s *server) UpdatePost(ctx context.Context, req *pb.UpdatePostRequest) (*pb.UpdatePostResponse, error) {
-	// Validate input
-	if req.Post.GetPostid() == "" || req.Post.GetTitle() == "" || len(req.Post.GetTitle()) > 100 || req.Post.GetDescription() == "" {
-		return nil, fmt.Errorf("validation error")
+// UpdatePost updates an existing post
+func (s *Server) UpdatePost(ctx context.Context, req *postpb.UpdatePostRequest) (*postpb.UpdatePostResponse, error) {
+	post := req.GetPost()
+
+	if post.PostId == "" || post.Title == "" || post.Description == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "post_id, title, and description are required")
 	}
 
-	// Update database
-	_, err := s.db.Exec("UPDATE posts SET title = ?, description = ?, created_by = ?, created_at = ?, updated_at = ? WHERE postid = ?",
-		req.Post.GetTitle(),
-		req.Post.GetDescription(),
-		req.Post.GetCreatedBy(),
-		req.Post.GetCreatedAt().Seconds,
-		req.Post.GetUpdatedAt().Seconds,
-		req.Post.GetPostid(),
-	)
+	if len(post.Title) > 100 {
+		return nil, status.Errorf(codes.InvalidArgument, "title cannot exceed 100 characters")
+	}
+
+	updatedAt := time.Now().Unix()
+	query := "UPDATE posts SET title = ?, description = ?, updated_at = ? WHERE postid = ?"
+	res, err := s.DB.ExecContext(ctx, query, post.Title, post.Description, updatedAt, post.PostId)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "failed to update post: %v", err)
 	}
 
-	return &pb.UpdatePostResponse{Post: req.Post}, nil
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to check rows affected: %v", err)
+	}
+	if rowsAffected == 0 {
+		return nil, status.Errorf(codes.NotFound, "post not found")
+	}
+
+	return &postpb.UpdatePostResponse{Success: true}, nil
 }
 
-func (s *server) DeletePost(ctx context.Context, req *pb.DeletePostRequest) (*pb.DeletePostResponse, error) {
-	_, err := s.db.Exec("DELETE FROM posts WHERE postid = ?", req.GetPostid())
+// DeletePost deletes a post by ID
+func (s *Server) DeletePost(ctx context.Context, req *postpb.DeletePostRequest) (*postpb.DeletePostResponse, error) {
+	postID := req.GetPostId()
+
+	query := "DELETE FROM posts WHERE postid = ?"
+	res, err := s.DB.ExecContext(ctx, query, postID)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "failed to delete post: %v", err)
 	}
-	return &pb.DeletePostResponse{}, nil
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to check rows affected: %v", err)
+	}
+	if rowsAffected == 0 {
+		return nil, status.Errorf(codes.NotFound, "post not found")
+	}
+
+	return &postpb.DeletePostResponse{Success: true}, nil
 }
