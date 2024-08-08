@@ -3,13 +3,12 @@ package server
 import (
 	"context"
 	"database/sql"
-	"log"
 	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	_ "github.com/go-sql-driver/mysql"
-	"your-module-name/postpb"
+	"github.com/nawarajshah/grpc-post-service/postpb"
 )
 
 type Server struct {

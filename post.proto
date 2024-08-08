@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package post;
 
-option go_package = "github.com/nawarajshah/grpc-post-service/postpb";
+option go_package = "./postpb";
 
 // Post message represents a blog post
 message Post {
