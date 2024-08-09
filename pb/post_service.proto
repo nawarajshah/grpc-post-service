@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/nawarajshah/grpc-post-service/pb";
+
+import "pb/post_request.proto";
+import "pb/post_response.proto";
+
+// Define the PostService
+service PostService {
+  rpc CreatePost(CreatePostRequest) returns (PostResponse);
+  rpc GetPost(GetPostRequest) returns (PostResponse);
+  rpc UpdatePost(UpdatePostRequest) returns (PostResponse);
+  rpc DeletePost(DeletePostRequest) returns (Empty);
+}
