@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/nawarajshah/grpc-post-service/pb"
-	"github.com/nawarajshah/grpc-post-service/pkg/models"
+	"github.com/nawarajshah/grpc-post-service/server/pkg/models"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -45,12 +45,12 @@ func (s *PostServiceServer) CreatePost(ctx context.Context, req *pb.CreatePostRe
 
 	return &pb.PostResponse{
 		Post: &pb.Post{
-			PostId:     post.PostId,
-			Title:      post.Title,
+			PostId:      post.PostId,
+			Title:       post.Title,
 			Description: post.Description,
-			CreatedBy:  post.CreatedBy,
-			CreatedAt:  timestamppb.New(createdAt),
-			UpdatedAt:  timestamppb.New(updatedAt),
+			CreatedBy:   post.CreatedBy,
+			CreatedAt:   timestamppb.New(createdAt),
+			UpdatedAt:   timestamppb.New(updatedAt),
 		},
 	}, nil
 }
@@ -73,12 +73,12 @@ func (s *PostServiceServer) GetPost(ctx context.Context, req *pb.GetPostRequest)
 
 	return &pb.PostResponse{
 		Post: &pb.Post{
-			PostId:     post.PostID,
-			Title:      post.Title,
+			PostId:      post.PostID,
+			Title:       post.Title,
 			Description: post.Description,
-			CreatedBy:  post.CreatedBy,
-			CreatedAt:  timestamppb.New(post.CreatedAt),
-			UpdatedAt:  timestamppb.New(post.UpdatedAt),
+			CreatedBy:   post.CreatedBy,
+			CreatedAt:   timestamppb.New(post.CreatedAt),
+			UpdatedAt:   timestamppb.New(post.UpdatedAt),
 		},
 	}, nil
 }
@@ -104,12 +104,12 @@ func (s *PostServiceServer) UpdatePost(ctx context.Context, req *pb.UpdatePostRe
 
 	return &pb.PostResponse{
 		Post: &pb.Post{
-			PostId:     post.PostId,
-			Title:      post.Title,
+			PostId:      post.PostId,
+			Title:       post.Title,
 			Description: post.Description,
-			CreatedBy:  post.CreatedBy,
-			CreatedAt:  post.CreatedAt,
-			UpdatedAt:  timestamppb.New(updatedAt),
+			CreatedBy:   post.CreatedBy,
+			CreatedAt:   post.CreatedAt,
+			UpdatedAt:   timestamppb.New(updatedAt),
 		},
 	}, nil
 }

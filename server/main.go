@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/nawarajshah/grpc-post-service/pb"
-	"github.com/nawarajshah/grpc-post-service/pkg/db"
-	"github.com/nawarajshah/grpc-post-service/pkg/service"
+	"github.com/nawarajshah/grpc-post-service/server/pkg/db"
+	"github.com/nawarajshah/grpc-post-service/server/pkg/service"
 )
 
 func main() {
