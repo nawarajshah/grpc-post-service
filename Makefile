@@ -10,8 +10,8 @@ gen:
 clean:
 	del .\pb\*.go
 
-runClient:
-	go run client/main.go
+runAPI:
+	go run post-api/main.go
 
-runServer:
-	go run server/cmd/main.go
+runService:
+	go run post-service/cmd/main.go

@@ -8,8 +8,9 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/nawarajshah/grpc-post-service/pb"
-	"github.com/nawarajshah/grpc-post-service/server/pkg/db"
-	"github.com/nawarajshah/grpc-post-service/server/pkg/service"
+	"github.com/nawarajshah/grpc-post-service/post-service/pkg/db"
+	"github.com/nawarajshah/grpc-post-service/post-service/pkg/repo"
+	"github.com/nawarajshah/grpc-post-service/post-service/pkg/service"
 )
 
 func main() {
@@ -17,11 +18,14 @@ func main() {
 	database := db.Connect()
 	defer database.Close()
 
+	// Initialize the repository
+	postRepo := repo.NewPostRepository(database)
+
 	// Create a new gRPC server
 	grpcServer := grpc.NewServer()
 
 	// Register the PostServiceServer
-	postService := service.NewPostServiceServer(database)
+	postService := service.NewPostServiceServer(postRepo)
 	pb.RegisterPostServiceServer(grpcServer, postService)
 
 	// Listen on port 50051
