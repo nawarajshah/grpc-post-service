@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package pb;
 
-option go_package = "github.com/nawarajshah/grpc-post-service/pb";
+option go_package = "./pb";
 
 import "google/api/annotations.proto";
 import "pb/post_request.proto";
