@@ -6,7 +6,7 @@ option go_package = "./pb";
 
 import "google/protobuf/timestamp.proto";
 
-// Define the Post message
+// Post message definition
 message Post {
   string postId = 1;
   string title = 2;

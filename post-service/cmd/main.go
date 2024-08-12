@@ -18,13 +18,13 @@ func main() {
 	database := db.Connect()
 	defer database.Close()
 
-	// Create the PostRepository instance
+	// Initialize the repository
 	postRepo := repo.NewPostRepository(database)
 
 	// Create a new gRPC server
 	grpcServer := grpc.NewServer()
 
-	// Register the PostServiceServer using the repository
+	// Register the PostServiceServer
 	postService := service.NewPostServiceServer(postRepo)
 	pb.RegisterPostServiceServer(grpcServer, postService)
 

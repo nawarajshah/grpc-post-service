@@ -18,20 +18,12 @@ func main() {
 	}
 	defer conn.Close()
 
-	// Set up clients for the gRPC services
 	postClient := pb.NewPostServiceClient(conn)
-	commentClient := pb.NewCommentServiceClient(conn)
-
-	// Create service instances
 	postService := service.NewPostService(postClient)
-	commentService := service.NewCommentService(commentClient)
-
-	// Create controller instances
 	postController := controller.NewPostController(postService)
-	commentController := controller.NewCommentController(commentService)
 
 	// Set up the Gin router
-	r := router.SetupRouter(postController, commentController)
+	r := router.SetupRouter(postController)
 
 	// Run the Gin server
 	if err := r.Run(":8080"); err != nil {

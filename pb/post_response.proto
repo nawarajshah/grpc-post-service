@@ -6,7 +6,9 @@ option go_package = "./pb";
 
 import "pb/post.proto";
 
-// Define response messages
+// Response messages
 message PostResponse {
   Post post = 1;
 }
+
+message Empty {}
