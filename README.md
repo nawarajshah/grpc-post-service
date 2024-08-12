@@ -1,6 +1,3 @@
-Certainly! Here's a comprehensive `README.md` file for your project. This file will provide essential information about the project, its setup, and how to use it.
-
-```markdown
 # gRPC Post and Comment Service
 
 This project is a gRPC-based service with a RESTful API, using the Gin framework for managing posts and comments. It connects to a MySQL database and allows clients to perform CRUD operations on posts and comments.
