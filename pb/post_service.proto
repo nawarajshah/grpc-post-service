@@ -8,30 +8,31 @@ import "google/api/annotations.proto";
 import "pb/post_request.proto";
 import "pb/post_response.proto";
 
+// PostService definition
 service PostService {
   rpc CreatePost(CreatePostRequest) returns (PostResponse) {
     option (google.api.http) = {
-      post: "/v1/posts"
+      post: "/api/posts"
       body: "post"
     };
   }
   
   rpc GetPost(GetPostRequest) returns (PostResponse) {
     option (google.api.http) = {
-      get: "/v1/posts/{postId}"
+      get: "/api/posts/{postId}"
     };
   }
   
   rpc UpdatePost(UpdatePostRequest) returns (PostResponse) {
     option (google.api.http) = {
-      put: "/v1/posts/{post.postId}"
+      put: "/api/posts/{post.postId}"
       body: "post"
     };
   }
   
   rpc DeletePost(DeletePostRequest) returns (Empty) {
     option (google.api.http) = {
-      delete: "/v1/posts/{postId}"
+      delete: "/api/posts/{postId}"
     };
   }
 }

@@ -10,3 +10,5 @@ import "pb/post.proto";
 message PostResponse {
   Post post = 1;
 }
+
+message Empty {}
