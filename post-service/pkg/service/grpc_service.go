@@ -10,6 +10,7 @@ import (
 	"github.com/nawarajshah/grpc-post-service/post-service/pkg/repo"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"google.golang.org/protobuf/types/known/emptypb" // Import the emptypb package
 )
 
 type PostServiceServer struct {
@@ -126,13 +127,13 @@ func (s *PostServiceServer) UpdatePost(ctx context.Context, req *pb.UpdatePostRe
 	}, nil
 }
 
-func (s *PostServiceServer) DeletePost(ctx context.Context, req *pb.DeletePostRequest) (*pb.Empty, error) {
-	postID := req.GetPostId()
+func (s *PostServiceServer) DeletePost(ctx context.Context, req *pb.DeletePostRequest) (*emptypb.Empty, error) {
+	postId := req.GetPostId()
 
-	err := s.Repo.Delete(postID)
+	err := s.Repo.Delete(postId)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.Empty{}, nil
+	return &emptypb.Empty{}, nil
 }

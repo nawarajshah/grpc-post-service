@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "./pb";
+
+import "pb/comment_request.proto";
+import "pb/comment_response.proto";
+import "google/protobuf/empty.proto"; // Import the Empty message
+
+// Define the CommentService
+service CommentService {
+  rpc CreateComment(CreateCommentRequest) returns (CommentResponse);
+  rpc GetComment(GetCommentRequest) returns (CommentResponse);
+  rpc UpdateComment(UpdateCommentRequest) returns (CommentResponse);
+  rpc DeleteComment(DeleteCommentRequest) returns (google.protobuf.Empty); // Usage of Empty
+  rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse);
+}

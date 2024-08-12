@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "./pb";
+
+import "google/protobuf/timestamp.proto";
+
+// Define the Comment message
+message Comment {
+  string commentId = 1;
+  string postId = 2;
+  string userId = 3;
+  string content = 4;
+  google.protobuf.Timestamp createdAt = 5;
+  google.protobuf.Timestamp updatedAt = 6;
+}

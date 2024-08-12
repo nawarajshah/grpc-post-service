@@ -18,8 +18,9 @@ func main() {
 	database := db.Connect()
 	defer database.Close()
 
-	// Initialize the repository
+	// Initialize repositories
 	postRepo := repo.NewPostRepository(database)
+	commentRepo := repo.NewCommentRepository(database)
 
 	// Create a new gRPC server
 	grpcServer := grpc.NewServer()
@@ -27,6 +28,10 @@ func main() {
 	// Register the PostServiceServer
 	postService := service.NewPostServiceServer(postRepo)
 	pb.RegisterPostServiceServer(grpcServer, postService)
+
+	// Register the CommentServiceServer
+	commentService := service.NewCommentServiceServer(commentRepo)
+	pb.RegisterCommentServiceServer(grpcServer, commentService)
 
 	// Listen on port 50051
 	listener, err := net.Listen("tcp", ":50051")

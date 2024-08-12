@@ -40,5 +40,29 @@ func Connect() *sql.DB {
 	}
 
 	fmt.Println("Connected to the database successfully")
+
+	// Ensure the comments table exists
+	ensureCommentsTableExists(db)
+
 	return db
+}
+
+func ensureCommentsTableExists(db *sql.DB) {
+	createTableQuery := `
+	CREATE TABLE IF NOT EXISTS comments (
+		commentid CHAR(32) PRIMARY KEY,
+		postid CHAR(32) NOT NULL,
+		userid CHAR(32) NOT NULL,
+		content TEXT NOT NULL,
+		created_at BIGINT NOT NULL,
+		updated_at BIGINT NOT NULL,
+		FOREIGN KEY (postid) REFERENCES posts(postid) ON DELETE CASCADE
+	);`
+
+	_, err := db.Exec(createTableQuery)
+	if err != nil {
+		log.Fatalf("Error creating comments table: %v", err)
+	}
+
+	fmt.Println("Comments table ensured to exist.")
 }
