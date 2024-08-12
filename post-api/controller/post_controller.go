@@ -3,10 +3,12 @@ package controller
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nawarajshah/grpc-post-service/pb"
 	"github.com/nawarajshah/grpc-post-service/post-api/service"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type PostController struct {
@@ -20,13 +22,37 @@ func NewPostController(postService service.PostService) *PostController {
 }
 
 func (c *PostController) CreatePost(ctx *gin.Context) {
-	var req pb.CreatePostRequest
+	var req struct {
+		PostId      string `json:"postId" binding:"required"`
+		Title       string `json:"title" binding:"required"`
+		Description string `json:"description" binding:"required"`
+		CreatedBy   string `json:"createdBy" binding:"required"`
+		CreatedAt   string `json:"createdAt" binding:"required"`
+	}
+
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	res, err := c.PostService.CreatePost(context.Background(), &req)
+	createdAt, err := time.Parse(time.RFC3339, req.CreatedAt)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid createdAt format, must be RFC3339"})
+		return
+	}
+
+	pbReq := &pb.CreatePostRequest{
+		Post: &pb.Post{
+			PostId:      req.PostId,
+			Title:       req.Title,
+			Description: req.Description,
+			CreatedBy:   req.CreatedBy,
+			CreatedAt:   timestamppb.New(createdAt),
+			UpdatedAt:   timestamppb.Now(), // Set the updatedAt to current time on creation
+		},
+	}
+
+	res, err := c.PostService.CreatePost(context.Background(), pbReq)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -49,13 +75,34 @@ func (c *PostController) GetPost(ctx *gin.Context) {
 }
 
 func (c *PostController) UpdatePost(ctx *gin.Context) {
-	var req pb.UpdatePostRequest
+	var req struct {
+		PostId      string `json:"postId" binding:"required"`
+		Title       string `json:"title" binding:"required"`
+		Description string `json:"description" binding:"required"`
+		UpdatedAt   string `json:"updatedAt" binding:"required"`
+	}
+
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	res, err := c.PostService.UpdatePost(context.Background(), &req)
+	updatedAt, err := time.Parse(time.RFC3339, req.UpdatedAt)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid updatedAt format, must be RFC3339"})
+		return
+	}
+
+	pbReq := &pb.UpdatePostRequest{
+		Post: &pb.Post{
+			PostId:      req.PostId,
+			Title:       req.Title,
+			Description: req.Description,
+			UpdatedAt:   timestamppb.New(updatedAt),
+		},
+	}
+
+	res, err := c.PostService.UpdatePost(context.Background(), pbReq)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
