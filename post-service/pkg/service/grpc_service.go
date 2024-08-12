@@ -2,24 +2,24 @@ package service
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"time"
 
 	"github.com/nawarajshah/grpc-post-service/pb"
-	"github.com/nawarajshah/grpc-post-service/server/pkg/models"
+	"github.com/nawarajshah/grpc-post-service/post-service/pkg/models"
+	"github.com/nawarajshah/grpc-post-service/post-service/pkg/repo"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type PostServiceServer struct {
 	pb.UnimplementedPostServiceServer
-	DB *sql.DB
+	Repo repo.PostRepository
 }
 
-func NewPostServiceServer(db *sql.DB) *PostServiceServer {
+func NewPostServiceServer(repo repo.PostRepository) *PostServiceServer {
 	return &PostServiceServer{
-		DB: db,
+		Repo: repo,
 	}
 }
 
@@ -37,39 +37,42 @@ func (s *PostServiceServer) CreatePost(ctx context.Context, req *pb.CreatePostRe
 	createdAt := time.Now()
 	updatedAt := time.Now()
 
-	query := "INSERT INTO posts (postid, title, description, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)"
-	_, err := s.DB.Exec(query, post.PostId, post.Title, post.Description, post.CreatedBy, createdAt.Unix(), updatedAt.Unix())
+	newPost := &models.Post{
+		PostID:      post.PostId,
+		Title:       post.Title,
+		Description: post.Description,
+		CreatedBy:   post.CreatedBy,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
+	}
+
+	err := s.Repo.Create(newPost)
 	if err != nil {
-		return nil, fmt.Errorf("error inserting post: %v", err)
+		return nil, err
 	}
 
 	return &pb.PostResponse{
 		Post: &pb.Post{
-			PostId:      post.PostId,
-			Title:       post.Title,
-			Description: post.Description,
-			CreatedBy:   post.CreatedBy,
-			CreatedAt:   timestamppb.New(createdAt),
-			UpdatedAt:   timestamppb.New(updatedAt),
+			PostId:      newPost.PostID,
+			Title:       newPost.Title,
+			Description: newPost.Description,
+			CreatedBy:   newPost.CreatedBy,
+			CreatedAt:   timestamppb.New(newPost.CreatedAt),
+			UpdatedAt:   timestamppb.New(newPost.UpdatedAt),
 		},
 	}, nil
 }
 
 func (s *PostServiceServer) GetPost(ctx context.Context, req *pb.GetPostRequest) (*pb.PostResponse, error) {
-	postId := req.GetPostId()
+	postID := req.GetPostId()
 
-	query := "SELECT postid, title, description, created_by, created_at, updated_at FROM posts WHERE postid = ?"
-	row := s.DB.QueryRow(query, postId)
-
-	var post models.Post
-	var createdAtUnix, updatedAtUnix int64
-	err := row.Scan(&post.PostID, &post.Title, &post.Description, &post.CreatedBy, &createdAtUnix, &updatedAtUnix)
+	post, err := s.Repo.GetByID(postID)
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving post: %v", err)
+		return nil, err
 	}
-
-	post.CreatedAt = time.Unix(createdAtUnix, 0)
-	post.UpdatedAt = time.Unix(updatedAtUnix, 0)
+	if post == nil {
+		return nil, fmt.Errorf("post not found")
+	}
 
 	return &pb.PostResponse{
 		Post: &pb.Post{
@@ -94,33 +97,41 @@ func (s *PostServiceServer) UpdatePost(ctx context.Context, req *pb.UpdatePostRe
 		return nil, fmt.Errorf("title cannot exceed 100 characters")
 	}
 
-	updatedAt := time.Now()
-
-	query := "UPDATE posts SET title = ?, description = ?, updated_at = ? WHERE postid = ?"
-	_, err := s.DB.Exec(query, post.Title, post.Description, updatedAt.Unix(), post.PostId)
+	existingPost, err := s.Repo.GetByID(post.PostId)
 	if err != nil {
-		return nil, fmt.Errorf("error updating post: %v", err)
+		return nil, err
+	}
+	if existingPost == nil {
+		return nil, fmt.Errorf("post not found")
+	}
+
+	existingPost.Title = post.Title
+	existingPost.Description = post.Description
+	existingPost.UpdatedAt = time.Now()
+
+	err = s.Repo.Update(existingPost)
+	if err != nil {
+		return nil, err
 	}
 
 	return &pb.PostResponse{
 		Post: &pb.Post{
-			PostId:      post.PostId,
-			Title:       post.Title,
-			Description: post.Description,
-			CreatedBy:   post.CreatedBy,
-			CreatedAt:   post.CreatedAt,
-			UpdatedAt:   timestamppb.New(updatedAt),
+			PostId:      existingPost.PostID,
+			Title:       existingPost.Title,
+			Description: existingPost.Description,
+			CreatedBy:   existingPost.CreatedBy,
+			CreatedAt:   timestamppb.New(existingPost.CreatedAt),
+			UpdatedAt:   timestamppb.New(existingPost.UpdatedAt),
 		},
 	}, nil
 }
 
 func (s *PostServiceServer) DeletePost(ctx context.Context, req *pb.DeletePostRequest) (*pb.Empty, error) {
-	postId := req.GetPostId()
+	postID := req.GetPostId()
 
-	query := "DELETE FROM posts WHERE postid = ?"
-	_, err := s.DB.Exec(query, postId)
+	err := s.Repo.Delete(postID)
 	if err != nil {
-		return nil, fmt.Errorf("error deleting post: %v", err)
+		return nil, err
 	}
 
 	return &pb.Empty{}, nil
