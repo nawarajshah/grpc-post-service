@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "./pb";
+
+import "pb/comment.proto";
+
+// Define request messages
+message CreateCommentRequest {
+  Comment comment = 1;
+}
+
+message UpdateCommentRequest {
+  Comment comment = 1;
+}
+
+message GetCommentRequest {
+  string postId = 1;
+  string commentId = 2;
+}
+
+message DeleteCommentRequest {
+  string postId = 1;
+  string commentId = 2;
+  string userId = 3;  // Add userId field
+}
+
+message ListCommentsRequest {
+  string postId = 1;
+}
