@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "./pb";
+
+message User {
+  string user_id = 1;
+  string email = 2;
+  string full_name = 3;
+}
+
+message Comment {
+  string comment_id = 1;
+  string post_id = 2;
+  string user_id = 3;
+  string content = 4;
+  int64 created_at = 5;
+  int64 updated_at = 6;
+}

@@ -2,37 +2,36 @@ syntax = "proto3";
 
 package pb;
 
-option go_package = "github.com/nawarajshah/grpc-post-service/pb";
+option go_package = "./pb";
 
 import "google/api/annotations.proto";
 import "pb/post_request.proto";
 import "pb/post_response.proto";
 
-// PostService definition
 service PostService {
   rpc CreatePost(CreatePostRequest) returns (PostResponse) {
     option (google.api.http) = {
-      post: "/api/posts"
+      post: "/v1/posts"
       body: "post"
     };
   }
   
   rpc GetPost(GetPostRequest) returns (PostResponse) {
     option (google.api.http) = {
-      get: "/api/posts/{postId}"
+      get: "/v1/posts/{postId}"
     };
   }
   
   rpc UpdatePost(UpdatePostRequest) returns (PostResponse) {
     option (google.api.http) = {
-      put: "/api/posts/{post.postId}"
+      put: "/v1/posts/{post.postId}"
       body: "post"
     };
   }
   
   rpc DeletePost(DeletePostRequest) returns (Empty) {
     option (google.api.http) = {
-      delete: "/api/posts/{postId}"
+      delete: "/v1/posts/{postId}"
     };
   }
 }
