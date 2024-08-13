@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "./pb";
+
+// Sign up response
+message SignUpResponse {
+  string user_id = 1;
+}
+
+// Sign in response
+message SignInResponse {
+  string token = 1;
+}

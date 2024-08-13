@@ -26,8 +26,12 @@ func main() {
 	commentService := service.NewCommentService(commentClient)
 	commentController := controller.NewCommentController(commentService)
 
+	authClient := pb.NewAuthServiceClient(conn)
+	authService := service.NewAuthService(authClient)
+	authController := controller.NewAuthController(authService)
+
 	// Set up the Gin router
-	r := router.SetupRouter(postController, commentController)
+	r := router.SetupRouter(postController, commentController, authController)
 
 	// Run the Gin server
 	if err := r.Run(":8080"); err != nil {
