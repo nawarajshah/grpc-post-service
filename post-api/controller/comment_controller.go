@@ -26,6 +26,9 @@ func (c *CommentController) CreateComment(ctx *gin.Context) {
 		return
 	}
 
+	// Extract postId from URI
+	req.Comment.PostId = ctx.Param("postId")
+
 	res, err := c.CommentService.CreateComment(context.Background(), &req)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -56,11 +59,9 @@ func (c *CommentController) UpdateComment(ctx *gin.Context) {
 		return
 	}
 
-	postID := ctx.Param("postId")
-	commentID := ctx.Param("commentId")
-
-	req.Comment.PostId = postID
-	req.Comment.CommentId = commentID
+	// Extract postId and commentId from URI
+	req.Comment.PostId = ctx.Param("postId")
+	req.Comment.CommentId = ctx.Param("commentId")
 
 	res, err := c.CommentService.UpdateComment(context.Background(), &req)
 	if err != nil {
