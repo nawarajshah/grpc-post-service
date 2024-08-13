@@ -151,7 +151,6 @@ Here are the available endpoints for managing posts and comments:
      ```json
      {
        "comment": {
-         "commentId": "12345",
          "userId": "user123",
          "content": "This is an updated test comment."
        }
