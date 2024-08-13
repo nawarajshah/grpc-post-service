@@ -131,7 +131,6 @@ Here are the available endpoints for managing posts and comments:
      {
        "comment": {
          "commentId": "12345",
-         "postId": "67890",
          "userId": "user123",
          "content": "This is a test comment."
        }
@@ -153,7 +152,6 @@ Here are the available endpoints for managing posts and comments:
      {
        "comment": {
          "commentId": "12345",
-         "postId": "67890",
          "userId": "user123",
          "content": "This is an updated test comment."
        }
