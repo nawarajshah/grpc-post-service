@@ -63,9 +63,19 @@ func (r *postRepository) Update(post *models.Post) error {
 
 func (r *postRepository) Delete(postID string) error {
 	query := "DELETE FROM posts WHERE postid = ?"
-	_, err := r.db.Exec(query, postID)
+	result, err := r.db.Exec(query, postID)
 	if err != nil {
 		return fmt.Errorf("error deleting post: %w", err)
 	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error checking rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("post not found")
+	}
+
 	return nil
 }

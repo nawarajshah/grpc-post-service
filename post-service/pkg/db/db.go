@@ -25,7 +25,7 @@ func Connect() *sql.DB {
 	name := os.Getenv("DB_NAME")
 
 	// Create the Data Source Name (DSN)
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", user, password, host, port, name)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", user, password, host, port, name)
 
 	// Connect to the database
 	db, err := sql.Open("mysql", dsn)
@@ -41,48 +41,61 @@ func Connect() *sql.DB {
 
 	fmt.Println("Connected to the database successfully")
 
-	// Ensure tables exist
+	// Ensure all required tables exist
 	ensureTablesExist(db)
 
 	return db
 }
 
 func ensureTablesExist(db *sql.DB) {
-	createUsersTable := `
+	// Ensure the users table exists
+	createUsersTableQuery := `
 	CREATE TABLE IF NOT EXISTS users (
 		user_id CHAR(36) PRIMARY KEY,
-		email VARCHAR(255) UNIQUE NOT NULL,
+		email VARCHAR(191) UNIQUE NOT NULL,
 		password_hash TEXT NOT NULL,
 		is_email_verified BOOLEAN NOT NULL
-	);`
+	);
+	`
+	_, err := db.Exec(createUsersTableQuery)
+	if err != nil {
+		log.Fatalf("Error creating users table: %v", err)
+	}
 
-	createPostsTable := `
+	// Ensure the posts table exists
+	createPostsTableQuery := `
 	CREATE TABLE IF NOT EXISTS posts (
 		postid CHAR(32) PRIMARY KEY,
 		title VARCHAR(250) NOT NULL,
-		description TEXT NOT NULL,
-		created_by CHAR(32) NOT NULL,
+		description TEXT,
+		created_by CHAR(36) NOT NULL,
 		created_at BIGINT NOT NULL,
-		updated_at BIGINT NOT NULL
-	);`
+		updated_at BIGINT NOT NULL,
+		FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE CASCADE
+	);
+	`
+	_, err = db.Exec(createPostsTableQuery)
+	if err != nil {
+		log.Fatalf("Error creating posts table: %v", err)
+	}
 
-	createCommentsTable := `
+	// Ensure the comments table exists
+	createCommentsTableQuery := `
 	CREATE TABLE IF NOT EXISTS comments (
 		commentid CHAR(32) PRIMARY KEY,
 		postid CHAR(32) NOT NULL,
-		userid CHAR(32) NOT NULL,
+		userid CHAR(36) NOT NULL,
 		content TEXT NOT NULL,
 		created_at BIGINT NOT NULL,
 		updated_at BIGINT NOT NULL,
-		FOREIGN KEY (postid) REFERENCES posts(postid) ON DELETE CASCADE
-	);`
-
-	// Execute each create table statement
-	for _, query := range []string{createUsersTable, createPostsTable, createCommentsTable} {
-		if _, err := db.Exec(query); err != nil {
-			log.Fatalf("Error creating tables: %v", err)
-		}
+		FOREIGN KEY (postid) REFERENCES posts(postid) ON DELETE CASCADE,
+		FOREIGN KEY (userid) REFERENCES users(user_id) ON DELETE CASCADE
+	);
+	`
+	_, err = db.Exec(createCommentsTableQuery)
+	if err != nil {
+		log.Fatalf("Error creating comments table: %v", err)
 	}
 
-	fmt.Println("All tables ensured to exist.")
+	fmt.Println("All required tables ensured to exist.")
 }

@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -62,12 +63,12 @@ func (c *PostController) CreatePost(ctx *gin.Context) {
 }
 
 func (c *PostController) GetPost(ctx *gin.Context) {
-	postID := ctx.Param("id")
+	postID := ctx.Param("postId") // Use the correct parameter name
 	req := &pb.GetPostRequest{PostId: postID}
 
 	res, err := c.PostService.GetPost(context.Background(), req)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
 		return
 	}
 
@@ -112,11 +113,15 @@ func (c *PostController) UpdatePost(ctx *gin.Context) {
 }
 
 func (c *PostController) DeletePost(ctx *gin.Context) {
-	postID := ctx.Param("id")
+	postID := ctx.Param("postId")
 	req := &pb.DeletePostRequest{PostId: postID}
 
 	_, err := c.PostService.DeletePost(context.Background(), req)
 	if err != nil {
+		if strings.Contains(err.Error(), "post not found") {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
