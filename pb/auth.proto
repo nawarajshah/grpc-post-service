@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "./pb";
+
+// User entity
+message User {
+  string user_id = 1;
+  string email = 2;
+  string password = 3;
+  bool is_email_verified = 4;
+}

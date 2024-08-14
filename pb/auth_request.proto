@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "./pb";
+
+import "pb/auth.proto";
+
+// Sign up request
+message SignUpRequest {
+  User user = 1;
+}
+
+// Sign in request
+message SignInRequest {
+  string email = 1;
+  string password = 2;
+}

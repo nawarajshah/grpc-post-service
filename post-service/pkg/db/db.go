@@ -41,28 +41,61 @@ func Connect() *sql.DB {
 
 	fmt.Println("Connected to the database successfully")
 
-	// Ensure the comments table exists
-	ensureCommentsTableExists(db)
+	// Ensure all required tables exist
+	ensureTablesExist(db)
 
 	return db
 }
 
-func ensureCommentsTableExists(db *sql.DB) {
-	createTableQuery := `
+func ensureTablesExist(db *sql.DB) {
+	// Ensure the users table exists
+	createUsersTableQuery := `
+	CREATE TABLE IF NOT EXISTS users (
+		user_id CHAR(36) PRIMARY KEY,
+		email VARCHAR(191) UNIQUE NOT NULL,
+		password_hash TEXT NOT NULL,
+		is_email_verified BOOLEAN NOT NULL
+	);
+	`
+	_, err := db.Exec(createUsersTableQuery)
+	if err != nil {
+		log.Fatalf("Error creating users table: %v", err)
+	}
+
+	// Ensure the posts table exists
+	createPostsTableQuery := `
+	CREATE TABLE IF NOT EXISTS posts (
+		postid CHAR(32) PRIMARY KEY,
+		title VARCHAR(250) NOT NULL,
+		description TEXT,
+		created_by CHAR(36) NOT NULL,
+		created_at BIGINT NOT NULL,
+		updated_at BIGINT NOT NULL,
+		FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE CASCADE
+	);
+	`
+	_, err = db.Exec(createPostsTableQuery)
+	if err != nil {
+		log.Fatalf("Error creating posts table: %v", err)
+	}
+
+	// Ensure the comments table exists
+	createCommentsTableQuery := `
 	CREATE TABLE IF NOT EXISTS comments (
 		commentid CHAR(32) PRIMARY KEY,
 		postid CHAR(32) NOT NULL,
-		userid CHAR(32) NOT NULL,
+		userid CHAR(36) NOT NULL,
 		content TEXT NOT NULL,
 		created_at BIGINT NOT NULL,
 		updated_at BIGINT NOT NULL,
-		FOREIGN KEY (postid) REFERENCES posts(postid) ON DELETE CASCADE
-	);`
-
-	_, err := db.Exec(createTableQuery)
+		FOREIGN KEY (postid) REFERENCES posts(postid) ON DELETE CASCADE,
+		FOREIGN KEY (userid) REFERENCES users(user_id) ON DELETE CASCADE
+	);
+	`
+	_, err = db.Exec(createCommentsTableQuery)
 	if err != nil {
 		log.Fatalf("Error creating comments table: %v", err)
 	}
 
-	fmt.Println("Comments table ensured to exist.")
+	fmt.Println("All required tables ensured to exist.")
 }
