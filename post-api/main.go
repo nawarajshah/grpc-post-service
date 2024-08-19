@@ -30,8 +30,12 @@ func main() {
 	authService := service.NewAuthService(authClient)
 	authController := controller.NewAuthController(authService)
 
+	verificationClient := pb.NewVerificationServiceClient(conn)
+	verificationService := service.NewVerificationService(verificationClient)
+	verificationController := controller.NewVerificationController(verificationService)
+
 	// Set up the Gin router
-	r := router.SetupRouter(postController, commentController, authController)
+	r := router.SetupRouter(postController, commentController, authController, verificationController)
 
 	// Run the Gin server
 	if err := r.Run(":8080"); err != nil {

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/nawarajshah/grpc-post-service/pb"
 )
@@ -24,5 +25,8 @@ func (s *authService) SignUp(ctx context.Context, req *pb.SignUpRequest) (*pb.Si
 }
 
 func (s *authService) SignIn(ctx context.Context, req *pb.SignInRequest) (*pb.SignInResponse, error) {
+	// Log the received request for debugging
+	fmt.Printf("Received SignIn request with email: %s, password: %s\n", req.Email, req.Password)
+
 	return s.client.SignIn(ctx, req)
 }

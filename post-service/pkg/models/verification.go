@@ -1,10 +1,7 @@
 package models
 
-type User struct {
+type Verification struct {
 	UserID           string
-	Email            string
-	PasswordHash     string
-	IsEmailVerified  bool
 	VerificationCode string
 	CreatedAt        int64
 }

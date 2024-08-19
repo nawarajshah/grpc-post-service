@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "./pb";
+
+// Verification entity
+message Verification {
+  string user_id = 1;
+  string verification_code = 2;
+}
