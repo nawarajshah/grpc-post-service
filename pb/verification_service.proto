@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "./pb";
+
+import "pb/verification_request.proto";
+import "pb/verification_response.proto";
+
+// VerificationService definition
+service VerificationService {
+  rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse);
+}

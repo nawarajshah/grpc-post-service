@@ -6,7 +6,7 @@ import (
 	"github.com/nawarajshah/grpc-post-service/post-api/middleware"
 )
 
-func SetupRouter(postController *controller.PostController, commentController *controller.CommentController, authController *controller.AuthController) *gin.Engine {
+func SetupRouter(postController *controller.PostController, commentController *controller.CommentController, authController *controller.AuthController, verificationController *controller.VerificationController) *gin.Engine {
 	router := gin.Default()
 
 	api := router.Group("/api")
@@ -14,6 +14,7 @@ func SetupRouter(postController *controller.PostController, commentController *c
 		// Authentication routes
 		api.POST("/signup", authController.SignUp)
 		api.POST("/signin", authController.SignIn)
+		api.POST("/verify-email", verificationController.VerifyEmail)
 
 		// Protected routes
 		protected := api.Group("/")

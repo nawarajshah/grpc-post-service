@@ -54,7 +54,9 @@ func ensureTablesExist(db *sql.DB) {
 		user_id CHAR(36) PRIMARY KEY,
 		email VARCHAR(191) UNIQUE NOT NULL,
 		password_hash TEXT NOT NULL,
-		is_email_verified BOOLEAN NOT NULL
+		is_email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+		verification_code CHAR(6),
+		created_at BIGINT NOT NULL
 	);
 	`
 	_, err := db.Exec(createUsersTableQuery)

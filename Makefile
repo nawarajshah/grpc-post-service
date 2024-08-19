@@ -1,25 +1,51 @@
+# Go commands
+GOCMD=go
+GOTIDY=$(GOCMD) mod tidy
+GORUN=$(GOCMD) run
+
+# Protobuf generation commands
+PROTOC=protoc
+PROTO_FLAGS=--go_out=. --go-grpc_out=.
+PROTO_DIR=pb
+
+# Source directories
+POST_API_DIR=post-api
+POST_SERVICE_DIR=post-service
+
+# List of proto files
+PROTO_FILES=$(PROTO_DIR)/post.proto \
+	$(PROTO_DIR)/post_request.proto \
+	$(PROTO_DIR)/post_response.proto \
+	$(PROTO_DIR)/post_service.proto \
+	$(PROTO_DIR)/comment.proto \
+	$(PROTO_DIR)/comment_request.proto \
+	$(PROTO_DIR)/comment_response.proto \
+	$(PROTO_DIR)/comment_service.proto \
+	$(PROTO_DIR)/auth.proto \
+	$(PROTO_DIR)/auth_request.proto \
+	$(PROTO_DIR)/auth_response.proto \
+	$(PROTO_DIR)/auth_service.proto \
+	$(PROTO_DIR)/verification.proto \
+	$(PROTO_DIR)/verification_request.proto \
+	$(PROTO_DIR)/verification_response.proto \
+	$(PROTO_DIR)/verification_service.proto
+
+# Tidy up Go dependencies
 tidy:
-	go mod tidy
+	$(GOTIDY)
 
+# Generate protobuf files
 gen:
-	protoc --go_out=. --go-grpc_out=. pb/post.proto
-	protoc --go_out=. --go-grpc_out=. pb/post_request.proto
-	protoc --go_out=. --go-grpc_out=. pb/post_response.proto
-	protoc --go_out=. --go-grpc_out=. pb/post_service.proto
-	protoc --go_out=. --go-grpc_out=. pb/comment.proto
-	protoc --go_out=. --go-grpc_out=. pb/comment_request.proto
-	protoc --go_out=. --go-grpc_out=. pb/comment_response.proto
-	protoc --go_out=. --go-grpc_out=. pb/comment_service.proto
-	protoc --go_out=. --go-grpc_out=. pb/auth.proto
-	protoc --go_out=. --go-grpc_out=. pb/auth_request.proto
-	protoc --go_out=. --go-grpc_out=. pb/auth_response.proto
-	protoc --go_out=. --go-grpc_out=. pb/auth_service.proto
+	$(PROTOC) $(PROTO_FLAGS) $(PROTO_FILES)
 
+# Clean generated files
 clean:
 	del .\pb\*.go
 
-runAPI:
-	go run post-api/main.go
-
+# Run the post-service gRPC server
 runService:
-	go run post-service/cmd/main.go
+	$(GORUN) $(POST_SERVICE_DIR)/cmd/main.go
+
+# Run the post-api REST server
+runAPI:
+	$(GORUN) $(POST_API_DIR)/main.go

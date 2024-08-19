@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "./pb";
+
+// Verification request messages
+message VerifyEmailRequest {
+  string email = 1;
+  string verification_code = 2;
+}
