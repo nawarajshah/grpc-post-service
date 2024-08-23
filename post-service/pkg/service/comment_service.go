@@ -34,8 +34,8 @@ func (s *CommentServiceServer) CreateComment(ctx context.Context, req *pb.Create
 		return nil, fmt.Errorf("post not found")
 	}
 
-	// Assuming the correct field name for the post owner's ID is 'UserID'
-	isApproved := req.UserId == post.UserID
+	// Replace UserID with CreatedBy
+	isApproved := req.UserId == post.CreatedBy
 
 	comment := &models.Comment{
 		CommentID:  utils.GenerateUUID(),
@@ -45,7 +45,7 @@ func (s *CommentServiceServer) CreateComment(ctx context.Context, req *pb.Create
 		CreatedAt:  time.Now().Unix(),
 		UpdatedAt:  time.Now().Unix(),
 		IsApproved: isApproved,
-		OwnerID:    post.UserID, // Store the post owner's ID in the comment
+		OwnerID:    post.CreatedBy, // Store the post owner's ID in the comment
 	}
 
 	err = s.CommentRepo.Create(comment)

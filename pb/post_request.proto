@@ -20,4 +20,5 @@ message UpdatePostRequest {
 
 message DeletePostRequest {
   string post_id = 1;
+  string user_id = 2; // The ID of the user performing the deletion (optional)
 }

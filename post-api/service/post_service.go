@@ -9,7 +9,7 @@ type PostService interface {
 	CreatePost(ctx context.Context, req *pb.CreatePostRequest) (*pb.PostResponse, error)
 	GetPost(ctx context.Context, req *pb.GetPostRequest) (*pb.PostResponse, error)
 	UpdatePost(ctx context.Context, req *pb.UpdatePostRequest) (*pb.PostResponse, error)
-	DeletePost(ctx context.Context, req *pb.DeletePostRequest) (*pb.DeletePostResponse, error) // Ensure the correct return type
+	DeletePost(ctx context.Context, req *pb.DeletePostRequest) (*pb.DeletePostResponse, error) // Update method signature
 }
 
 type postService struct {
@@ -32,6 +32,6 @@ func (s *postService) UpdatePost(ctx context.Context, req *pb.UpdatePostRequest)
 	return s.client.UpdatePost(ctx, req)
 }
 
-func (s *postService) DeletePost(ctx context.Context, req *pb.DeletePostRequest) (*pb.DeletePostResponse, error) { // Correct return type
+func (s *postService) DeletePost(ctx context.Context, req *pb.DeletePostRequest) (*pb.DeletePostResponse, error) {
 	return s.client.DeletePost(ctx, req)
 }

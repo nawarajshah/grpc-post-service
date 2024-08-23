@@ -11,5 +11,6 @@ message PostResponse {
 }
 
 message DeletePostResponse {
-  string status = 1;  // Example field, customize as needed
+  string status = 1;
+  string user_id = 2; // The ID of the user who originally created the post
 }

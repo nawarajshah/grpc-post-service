@@ -1,10 +1,10 @@
 package models
 
 type Post struct {
-	PostID      string
-	Title       string
-	Description string
-	UserID      string // This should match 'created_by' in your database
-	CreatedAt   int64
-	UpdatedAt   int64
+	PostID      string `db:"postid"`
+	Title       string `db:"title"`
+	Description string `db:"description"`
+	CreatedBy   string `db:"created_by"` // Update this field name
+	CreatedAt   int64  `db:"created_at"`
+	UpdatedAt   int64  `db:"updated_at"`
 }

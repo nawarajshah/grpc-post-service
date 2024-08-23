@@ -2,13 +2,10 @@ package controller
 
 import (
 	"context"
-	"net/http"
-	"strings"
-	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/nawarajshah/grpc-post-service/pb"
 	"github.com/nawarajshah/grpc-post-service/post-api/service"
+	"net/http"
 )
 
 type PostController struct {
@@ -21,31 +18,33 @@ func NewPostController(postService service.PostService) *PostController {
 	}
 }
 
-func (c *PostController) CreatePost(ctx *gin.Context) {
-	var req struct {
-		Title       string `json:"title" binding:"required"`
-		Description string `json:"description" binding:"required"`
-		UserId      string `json:"user_id" binding:"required"`
+func (p *PostController) CreatePost(ctx *gin.Context) {
+	// Extract the created_by (userId) from the context
+	createdBy, exists := ctx.Get("userId")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
 	}
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	var reqBody struct {
+		Title       string `json:"title" binding:"required"`
+		Description string `json:"description" binding:"required"`
+	}
+	if err := ctx.ShouldBindJSON(&reqBody); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	createdAt := time.Now().Unix()
-	pbReq := &pb.CreatePostRequest{
+	req := &pb.CreatePostRequest{
 		Post: &pb.Post{
-			PostId:      "", // Will be generated on the server
-			Title:       req.Title,
-			Description: req.Description,
-			UserId:      req.UserId, // Correct field name
-			CreatedAt:   createdAt,  // Pass Unix timestamp directly
-			UpdatedAt:   createdAt,  // Pass Unix timestamp directly
+			PostId:      "", // This can be generated in the service layer if necessary
+			Title:       reqBody.Title,
+			Description: reqBody.Description,
+			UserId:      createdBy.(string), // Update to use `created_by`
 		},
 	}
 
-	res, err := c.PostService.CreatePost(ctx, pbReq)
+	res, err := p.PostService.CreatePost(context.Background(), req)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -67,50 +66,67 @@ func (c *PostController) GetPost(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-func (c *PostController) UpdatePost(ctx *gin.Context) {
-	var req struct {
-		PostId      string `json:"post_id" binding:"required"`
+func (p *PostController) UpdatePost(ctx *gin.Context) {
+	// Extract the PostId from the URL parameter
+	postId := ctx.Param("postId")
+
+	// Extract the userId from the context (set by middleware)
+	userId, exists := ctx.Get("userId")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Bind the incoming JSON request to a struct
+	var reqBody struct {
 		Title       string `json:"title" binding:"required"`
 		Description string `json:"description" binding:"required"`
 	}
-
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&reqBody); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	updatedAt := time.Now().Unix()
-	pbReq := &pb.UpdatePostRequest{
+	// Prepare the UpdatePostRequest
+	req := &pb.UpdatePostRequest{
 		Post: &pb.Post{
-			PostId:      req.PostId,
-			Title:       req.Title,
-			Description: req.Description,
-			UpdatedAt:   updatedAt, // Pass Unix timestamp directly
+			PostId:      postId, // Set the PostId from the URL parameter
+			Title:       reqBody.Title,
+			Description: reqBody.Description,
+			UserId:      userId.(string),
 		},
 	}
 
-	res, err := c.PostService.UpdatePost(ctx, pbReq)
+	// Call the service layer
+	res, err := p.PostService.UpdatePost(context.Background(), req)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 		return
 	}
 
+	// Return the response
 	ctx.JSON(http.StatusOK, res)
 }
 
-func (c *PostController) DeletePost(ctx *gin.Context) {
-	postID := ctx.Param("postId")
-	req := &pb.DeletePostRequest{PostId: postID}
+func (p *PostController) DeletePost(ctx *gin.Context) {
+	// Extract userId from the context set by the AuthMiddleware
+	userId, exists := ctx.Get("userId")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
 
-	_, err := c.PostService.DeletePost(context.Background(), req)
+	req := &pb.DeletePostRequest{
+		PostId: ctx.Param("postId"),
+	}
+
+	// Call the service layer
+	res, err := p.PostService.DeletePost(context.WithValue(context.Background(), "userId", userId), req)
 	if err != nil {
-		if strings.Contains(err.Error(), "post not found") {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
-			return
-		}
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "deleted"})
+	// Return the response with the user_id of the person who deleted the post
+	ctx.JSON(http.StatusOK, res)
 }
