@@ -1,12 +1,10 @@
 package models
 
-import "time"
-
 type Post struct {
 	PostID      string
 	Title       string
 	Description string
-	CreatedBy   string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	UserID      string // This should match 'created_by' in your database
+	CreatedAt   int64
+	UpdatedAt   int64
 }

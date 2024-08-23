@@ -21,13 +21,12 @@ func NewCommentController(commentService service.CommentService) *CommentControl
 
 func (c *CommentController) CreateComment(ctx *gin.Context) {
 	var req pb.CreateCommentRequest
+	req.PostId = ctx.Param("postId")
+	req.UserId = ctx.Param("userId") // If using JWT, this might come from the token
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	// Extract postId from URI
-	req.Comment.PostId = ctx.Param("postId")
 
 	res, err := c.CommentService.CreateComment(context.Background(), &req)
 	if err != nil {
@@ -54,14 +53,11 @@ func (c *CommentController) GetComment(ctx *gin.Context) {
 
 func (c *CommentController) UpdateComment(ctx *gin.Context) {
 	var req pb.UpdateCommentRequest
+	req.CommentId = ctx.Param("commentId")
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	// Extract postId and commentId from URI
-	req.Comment.PostId = ctx.Param("postId")
-	req.Comment.CommentId = ctx.Param("commentId")
 
 	res, err := c.CommentService.UpdateComment(context.Background(), &req)
 	if err != nil {
@@ -73,11 +69,9 @@ func (c *CommentController) UpdateComment(ctx *gin.Context) {
 }
 
 func (c *CommentController) DeleteComment(ctx *gin.Context) {
-	postID := ctx.Param("postId")
-	commentID := ctx.Param("commentId")
-	userID := ctx.GetHeader("userId") // Assume userId is passed in the header
-
-	req := &pb.DeleteCommentRequest{PostId: postID, CommentId: commentID, UserId: userID}
+	req := &pb.DeleteCommentRequest{
+		CommentId: ctx.Param("commentId"),
+	}
 
 	_, err := c.CommentService.DeleteComment(context.Background(), req)
 	if err != nil {
@@ -90,9 +84,26 @@ func (c *CommentController) DeleteComment(ctx *gin.Context) {
 
 func (c *CommentController) ListComments(ctx *gin.Context) {
 	postID := ctx.Param("postId")
-	req := &pb.ListCommentsRequest{PostId: postID}
+
+	req := &pb.GetCommentsByPostIDRequest{PostId: postID}
 
 	res, err := c.CommentService.ListComments(context.Background(), req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *CommentController) ApproveComment(ctx *gin.Context) {
+	var req pb.ApproveCommentRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	res, err := c.CommentService.ApproveComment(context.Background(), &req)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

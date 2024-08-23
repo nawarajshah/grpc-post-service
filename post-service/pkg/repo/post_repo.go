@@ -3,8 +3,6 @@ package repo
 import (
 	"database/sql"
 	"fmt"
-	"time"
-
 	"github.com/nawarajshah/grpc-post-service/post-service/pkg/models"
 )
 
@@ -24,8 +22,11 @@ func NewPostRepository(db *sql.DB) PostRepository {
 }
 
 func (r *postRepository) Create(post *models.Post) error {
-	query := "INSERT INTO posts (postid, title, description, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)"
-	_, err := r.db.Exec(query, post.PostID, post.Title, post.Description, post.CreatedBy, post.CreatedAt.Unix(), post.UpdatedAt.Unix())
+	query := `
+		INSERT INTO posts (postid, title, description, userid, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?)
+	`
+	_, err := r.db.Exec(query, post.PostID, post.Title, post.Description, post.UserID, post.CreatedAt, post.UpdatedAt)
 	if err != nil {
 		return fmt.Errorf("error inserting post: %w", err)
 	}
@@ -33,28 +34,37 @@ func (r *postRepository) Create(post *models.Post) error {
 }
 
 func (r *postRepository) GetByID(postID string) (*models.Post, error) {
-	query := "SELECT postid, title, description, created_by, created_at, updated_at FROM posts WHERE postid = ?"
+	// Use the correct column names from your database
+	query := `
+		SELECT postid, title, description, created_by, created_at, updated_at
+		FROM posts
+		WHERE postid = ?
+	`
+
 	row := r.db.QueryRow(query, postID)
 
 	var post models.Post
-	var createdAtUnix, updatedAtUnix int64
-	err := row.Scan(&post.PostID, &post.Title, &post.Description, &post.CreatedBy, &createdAtUnix, &updatedAtUnix)
+	err := row.Scan(&post.PostID, &post.Title, &post.Description, &post.UserID, &post.CreatedAt, &post.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil // no post found
+			fmt.Println("No post found with postID:", postID) // Log when no post is found
+			return nil, nil                                   // No post found
 		}
 		return nil, fmt.Errorf("error retrieving post: %w", err)
 	}
 
-	post.CreatedAt = time.Unix(createdAtUnix, 0)
-	post.UpdatedAt = time.Unix(updatedAtUnix, 0)
+	fmt.Println("Post retrieved successfully with postID:", postID) // Log success
 
 	return &post, nil
 }
 
 func (r *postRepository) Update(post *models.Post) error {
-	query := "UPDATE posts SET title = ?, description = ?, updated_at = ? WHERE postid = ?"
-	_, err := r.db.Exec(query, post.Title, post.Description, post.UpdatedAt.Unix(), post.PostID)
+	query := `
+		UPDATE posts
+		SET title = ?, description = ?, updated_at = ?
+		WHERE postid = ?
+	`
+	_, err := r.db.Exec(query, post.Title, post.Description, post.UpdatedAt, post.PostID)
 	if err != nil {
 		return fmt.Errorf("error updating post: %w", err)
 	}

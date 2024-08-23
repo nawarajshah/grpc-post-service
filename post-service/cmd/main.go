@@ -20,14 +20,16 @@ func main() {
 	// Initialize repositories
 	userRepo := repo.NewUserRepository(database)
 	verificationRepo := repo.NewVerificationRepository(database)
+	postRepo := repo.NewPostRepository(database)
+	commentRepo := repo.NewCommentRepository(database)
 
 	// Create a new gRPC server
 	grpcServer := grpc.NewServer()
 
 	// Initialize service servers
 	authService := service.NewAuthServiceServer(userRepo, verificationRepo)
-	postService := service.NewPostServiceServer(repo.NewPostRepository(database))
-	commentService := service.NewCommentServiceServer(repo.NewCommentRepository(database))
+	postService := service.NewPostServiceServer(postRepo)
+	commentService := service.NewCommentServiceServer(commentRepo, postRepo) // Pass both repositories
 
 	// Register the services with the gRPC server
 	pb.RegisterAuthServiceServer(grpcServer, authService)

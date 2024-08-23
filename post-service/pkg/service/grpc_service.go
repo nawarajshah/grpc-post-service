@@ -8,68 +8,51 @@ import (
 	"github.com/nawarajshah/grpc-post-service/pb"
 	"github.com/nawarajshah/grpc-post-service/post-service/pkg/models"
 	"github.com/nawarajshah/grpc-post-service/post-service/pkg/repo"
-
-	"google.golang.org/protobuf/types/known/timestamppb"
-	"google.golang.org/protobuf/types/known/emptypb" // Import the emptypb package
 )
 
-type PostServiceServer struct {
+type GrpcService struct {
 	pb.UnimplementedPostServiceServer
-	Repo repo.PostRepository
+	PostRepo repo.PostRepository
 }
 
-func NewPostServiceServer(repo repo.PostRepository) *PostServiceServer {
-	return &PostServiceServer{
-		Repo: repo,
+// NewPostServiceServer is a constructor for GrpcService
+func NewPostServiceServer(postRepo repo.PostRepository) *GrpcService {
+	return &GrpcService{
+		PostRepo: postRepo,
 	}
 }
 
-func (s *PostServiceServer) CreatePost(ctx context.Context, req *pb.CreatePostRequest) (*pb.PostResponse, error) {
-	post := req.GetPost()
-
-	// Validation
-	if post.PostId == "" || post.Title == "" || post.Description == "" {
-		return nil, fmt.Errorf("postId, title, and description are required")
-	}
-	if len(post.Title) > 100 {
-		return nil, fmt.Errorf("title cannot exceed 100 characters")
-	}
-
-	createdAt := time.Now()
-	updatedAt := time.Now()
-
-	newPost := &models.Post{
-		PostID:      post.PostId,
-		Title:       post.Title,
-		Description: post.Description,
-		CreatedBy:   post.CreatedBy,
-		CreatedAt:   createdAt,
-		UpdatedAt:   updatedAt,
+func (s *GrpcService) CreatePost(ctx context.Context, req *pb.CreatePostRequest) (*pb.PostResponse, error) {
+	post := &models.Post{
+		PostID:      req.Post.PostId,
+		Title:       req.Post.Title,
+		Description: req.Post.Description,
+		UserID:      req.Post.UserId,
+		CreatedAt:   time.Now().Unix(),
+		UpdatedAt:   time.Now().Unix(),
 	}
 
-	err := s.Repo.Create(newPost)
+	err := s.PostRepo.Create(post)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating post: %v", err)
 	}
 
 	return &pb.PostResponse{
 		Post: &pb.Post{
-			PostId:      newPost.PostID,
-			Title:       newPost.Title,
-			Description: newPost.Description,
-			CreatedBy:   newPost.CreatedBy,
-			CreatedAt:   timestamppb.New(newPost.CreatedAt),
-			UpdatedAt:   timestamppb.New(newPost.UpdatedAt),
+			PostId:      post.PostID,
+			Title:       post.Title,
+			Description: post.Description,
+			UserId:      post.UserID,
+			CreatedAt:   post.CreatedAt,
+			UpdatedAt:   post.UpdatedAt,
 		},
 	}, nil
 }
 
-func (s *PostServiceServer) GetPost(ctx context.Context, req *pb.GetPostRequest) (*pb.PostResponse, error) {
-	postID := req.GetPostId()
-
-	post, err := s.Repo.GetByID(postID)
+func (s *GrpcService) GetPost(ctx context.Context, req *pb.GetPostRequest) (*pb.PostResponse, error) {
+	post, err := s.PostRepo.GetByID(req.PostId)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error retrieving post: %v", err)
 	}
 	if post == nil {
 		return nil, fmt.Errorf("post not found")
@@ -80,60 +63,50 @@ func (s *PostServiceServer) GetPost(ctx context.Context, req *pb.GetPostRequest)
 			PostId:      post.PostID,
 			Title:       post.Title,
 			Description: post.Description,
-			CreatedBy:   post.CreatedBy,
-			CreatedAt:   timestamppb.New(post.CreatedAt),
-			UpdatedAt:   timestamppb.New(post.UpdatedAt),
+			UserId:      post.UserID,
+			CreatedAt:   post.CreatedAt,
+			UpdatedAt:   post.UpdatedAt,
 		},
 	}, nil
 }
 
-func (s *PostServiceServer) UpdatePost(ctx context.Context, req *pb.UpdatePostRequest) (*pb.PostResponse, error) {
-	post := req.GetPost()
-
-	// Validation
-	if post.PostId == "" || post.Title == "" || post.Description == "" {
-		return nil, fmt.Errorf("postId, title, and description are required")
-	}
-	if len(post.Title) > 100 {
-		return nil, fmt.Errorf("title cannot exceed 100 characters")
-	}
-
-	existingPost, err := s.Repo.GetByID(post.PostId)
+func (s *GrpcService) UpdatePost(ctx context.Context, req *pb.UpdatePostRequest) (*pb.PostResponse, error) {
+	post, err := s.PostRepo.GetByID(req.Post.PostId)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error retrieving post: %v", err)
 	}
-	if existingPost == nil {
+	if post == nil {
 		return nil, fmt.Errorf("post not found")
 	}
 
-	existingPost.Title = post.Title
-	existingPost.Description = post.Description
-	existingPost.UpdatedAt = time.Now()
+	post.Title = req.Post.Title
+	post.Description = req.Post.Description
+	post.UpdatedAt = time.Now().Unix()
 
-	err = s.Repo.Update(existingPost)
+	err = s.PostRepo.Update(post)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error updating post: %v", err)
 	}
 
 	return &pb.PostResponse{
 		Post: &pb.Post{
-			PostId:      existingPost.PostID,
-			Title:       existingPost.Title,
-			Description: existingPost.Description,
-			CreatedBy:   existingPost.CreatedBy,
-			CreatedAt:   timestamppb.New(existingPost.CreatedAt),
-			UpdatedAt:   timestamppb.New(existingPost.UpdatedAt),
+			PostId:      post.PostID,
+			Title:       post.Title,
+			Description: post.Description,
+			UserId:      post.UserID,
+			CreatedAt:   post.CreatedAt,
+			UpdatedAt:   post.UpdatedAt,
 		},
 	}, nil
 }
 
-func (s *PostServiceServer) DeletePost(ctx context.Context, req *pb.DeletePostRequest) (*emptypb.Empty, error) {
-	postId := req.GetPostId()
-
-	err := s.Repo.Delete(postId)
+func (s *GrpcService) DeletePost(ctx context.Context, req *pb.DeletePostRequest) (*pb.DeletePostResponse, error) {
+	err := s.PostRepo.Delete(req.PostId)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error deleting post: %v", err)
 	}
 
-	return &emptypb.Empty{}, nil
+	return &pb.DeletePostResponse{
+		Status: "Post deleted successfully",
+	}, nil
 }

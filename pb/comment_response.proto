@@ -4,13 +4,21 @@ package pb;
 
 option go_package = "./pb";
 
-import "pb/comment.proto";
-
-// Define response messages
+// Comment response
 message CommentResponse {
-  Comment comment = 1;
+  string comment_id = 1;
+  string post_id = 2;
+  string user_id = 3;
+  string content = 4;
+  int64 created_at = 5;
+  int64 updated_at = 6;
+  bool is_approved = 7;
 }
 
-message ListCommentsResponse {
-  repeated Comment comments = 1;
+// Get comments by post ID response
+message GetCommentsByPostIDResponse {
+  repeated CommentResponse comments = 1;
 }
+
+// Delete comment response
+message DeleteCommentResponse {}

@@ -20,7 +20,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Request messages
 type CreatePostRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -68,65 +67,18 @@ func (x *CreatePostRequest) GetPost() *Post {
 	return nil
 }
 
-type UpdatePostRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Post *Post `protobuf:"bytes,1,opt,name=post,proto3" json:"post,omitempty"`
-}
-
-func (x *UpdatePostRequest) Reset() {
-	*x = UpdatePostRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pb_post_request_proto_msgTypes[1]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *UpdatePostRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdatePostRequest) ProtoMessage() {}
-
-func (x *UpdatePostRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pb_post_request_proto_msgTypes[1]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdatePostRequest.ProtoReflect.Descriptor instead.
-func (*UpdatePostRequest) Descriptor() ([]byte, []int) {
-	return file_pb_post_request_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *UpdatePostRequest) GetPost() *Post {
-	if x != nil {
-		return x.Post
-	}
-	return nil
-}
-
 type GetPostRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	PostId string `protobuf:"bytes,1,opt,name=postId,proto3" json:"postId,omitempty"`
+	PostId string `protobuf:"bytes,1,opt,name=post_id,json=postId,proto3" json:"post_id,omitempty"`
 }
 
 func (x *GetPostRequest) Reset() {
 	*x = GetPostRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pb_post_request_proto_msgTypes[2]
+		mi := &file_pb_post_request_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -139,7 +91,7 @@ func (x *GetPostRequest) String() string {
 func (*GetPostRequest) ProtoMessage() {}
 
 func (x *GetPostRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pb_post_request_proto_msgTypes[2]
+	mi := &file_pb_post_request_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -152,7 +104,7 @@ func (x *GetPostRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPostRequest.ProtoReflect.Descriptor instead.
 func (*GetPostRequest) Descriptor() ([]byte, []int) {
-	return file_pb_post_request_proto_rawDescGZIP(), []int{2}
+	return file_pb_post_request_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *GetPostRequest) GetPostId() string {
@@ -162,12 +114,59 @@ func (x *GetPostRequest) GetPostId() string {
 	return ""
 }
 
+type UpdatePostRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Post *Post `protobuf:"bytes,1,opt,name=post,proto3" json:"post,omitempty"`
+}
+
+func (x *UpdatePostRequest) Reset() {
+	*x = UpdatePostRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_post_request_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdatePostRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdatePostRequest) ProtoMessage() {}
+
+func (x *UpdatePostRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_post_request_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdatePostRequest.ProtoReflect.Descriptor instead.
+func (*UpdatePostRequest) Descriptor() ([]byte, []int) {
+	return file_pb_post_request_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *UpdatePostRequest) GetPost() *Post {
+	if x != nil {
+		return x.Post
+	}
+	return nil
+}
+
 type DeletePostRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	PostId string `protobuf:"bytes,1,opt,name=postId,proto3" json:"postId,omitempty"`
+	PostId string `protobuf:"bytes,1,opt,name=post_id,json=postId,proto3" json:"post_id,omitempty"`
 }
 
 func (x *DeletePostRequest) Reset() {
@@ -217,17 +216,17 @@ var file_pb_post_request_proto_rawDesc = []byte{
 	0x70, 0x6f, 0x73, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x31, 0x0a, 0x11, 0x43, 0x72,
 	0x65, 0x61, 0x74, 0x65, 0x50, 0x6f, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
 	0x1c, 0x0a, 0x04, 0x70, 0x6f, 0x73, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x08, 0x2e,
-	0x70, 0x62, 0x2e, 0x50, 0x6f, 0x73, 0x74, 0x52, 0x04, 0x70, 0x6f, 0x73, 0x74, 0x22, 0x31, 0x0a,
-	0x11, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x6f, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x12, 0x1c, 0x0a, 0x04, 0x70, 0x6f, 0x73, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x08, 0x2e, 0x70, 0x62, 0x2e, 0x50, 0x6f, 0x73, 0x74, 0x52, 0x04, 0x70, 0x6f, 0x73, 0x74,
-	0x22, 0x28, 0x0a, 0x0e, 0x47, 0x65, 0x74, 0x50, 0x6f, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x70, 0x6f, 0x73, 0x74, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x06, 0x70, 0x6f, 0x73, 0x74, 0x49, 0x64, 0x22, 0x2b, 0x0a, 0x11, 0x44, 0x65,
-	0x6c, 0x65, 0x74, 0x65, 0x50, 0x6f, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
-	0x16, 0x0a, 0x06, 0x70, 0x6f, 0x73, 0x74, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x06, 0x70, 0x6f, 0x73, 0x74, 0x49, 0x64, 0x42, 0x06, 0x5a, 0x04, 0x2e, 0x2f, 0x70, 0x62, 0x62,
-	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x70, 0x62, 0x2e, 0x50, 0x6f, 0x73, 0x74, 0x52, 0x04, 0x70, 0x6f, 0x73, 0x74, 0x22, 0x29, 0x0a,
+	0x0e, 0x47, 0x65, 0x74, 0x50, 0x6f, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
+	0x17, 0x0a, 0x07, 0x70, 0x6f, 0x73, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x06, 0x70, 0x6f, 0x73, 0x74, 0x49, 0x64, 0x22, 0x31, 0x0a, 0x11, 0x55, 0x70, 0x64, 0x61,
+	0x74, 0x65, 0x50, 0x6f, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a,
+	0x04, 0x70, 0x6f, 0x73, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x08, 0x2e, 0x70, 0x62,
+	0x2e, 0x50, 0x6f, 0x73, 0x74, 0x52, 0x04, 0x70, 0x6f, 0x73, 0x74, 0x22, 0x2c, 0x0a, 0x11, 0x44,
+	0x65, 0x6c, 0x65, 0x74, 0x65, 0x50, 0x6f, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x73, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x06, 0x70, 0x6f, 0x73, 0x74, 0x49, 0x64, 0x42, 0x06, 0x5a, 0x04, 0x2e, 0x2f, 0x70,
+	0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -245,8 +244,8 @@ func file_pb_post_request_proto_rawDescGZIP() []byte {
 var file_pb_post_request_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_pb_post_request_proto_goTypes = []any{
 	(*CreatePostRequest)(nil), // 0: pb.CreatePostRequest
-	(*UpdatePostRequest)(nil), // 1: pb.UpdatePostRequest
-	(*GetPostRequest)(nil),    // 2: pb.GetPostRequest
+	(*GetPostRequest)(nil),    // 1: pb.GetPostRequest
+	(*UpdatePostRequest)(nil), // 2: pb.UpdatePostRequest
 	(*DeletePostRequest)(nil), // 3: pb.DeletePostRequest
 	(*Post)(nil),              // 4: pb.Post
 }
@@ -280,7 +279,7 @@ func file_pb_post_request_proto_init() {
 			}
 		}
 		file_pb_post_request_proto_msgTypes[1].Exporter = func(v any, i int) any {
-			switch v := v.(*UpdatePostRequest); i {
+			switch v := v.(*GetPostRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -292,7 +291,7 @@ func file_pb_post_request_proto_init() {
 			}
 		}
 		file_pb_post_request_proto_msgTypes[2].Exporter = func(v any, i int) any {
-			switch v := v.(*GetPostRequest); i {
+			switch v := v.(*UpdatePostRequest); i {
 			case 0:
 				return &v.state
 			case 1:

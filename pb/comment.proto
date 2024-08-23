@@ -4,14 +4,13 @@ package pb;
 
 option go_package = "./pb";
 
-import "google/protobuf/timestamp.proto";
-
-// Define the Comment message
+// Comment entity
 message Comment {
-  string commentId = 1;
-  string postId = 2;
-  string userId = 3;
+  string comment_id = 1;
+  string post_id = 2;
+  string user_id = 3;
   string content = 4;
-  google.protobuf.Timestamp createdAt = 5;
-  google.protobuf.Timestamp updatedAt = 6;
+  int64 created_at = 5;
+  int64 updated_at = 6;
+  bool is_approved = 7;
 }

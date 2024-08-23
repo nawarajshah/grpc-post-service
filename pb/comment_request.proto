@@ -4,28 +4,37 @@ package pb;
 
 option go_package = "./pb";
 
-import "pb/comment.proto";
-
-// Define request messages
+// Create comment request
 message CreateCommentRequest {
-  Comment comment = 1;
+  string post_id = 1;
+  string user_id = 2;
+  string content = 3;
 }
 
-message UpdateCommentRequest {
-  Comment comment = 1;
-}
-
+// Get comment request
 message GetCommentRequest {
-  string postId = 1;
-  string commentId = 2;
+  string comment_id = 1;
+  string post_id = 2; // Add PostId if you want to fetch by PostID
 }
 
+// Get comments by post ID request
+message GetCommentsByPostIDRequest {
+  string post_id = 1;
+}
+
+// Update comment request
+message UpdateCommentRequest {
+  string comment_id = 1;
+  string content = 2;
+}
+
+// Approve comment request
+message ApproveCommentRequest {
+  string comment_id = 1;
+  string user_id = 2;
+}
+
+// Delete comment request
 message DeleteCommentRequest {
-  string postId = 1;
-  string commentId = 2;
-  string userId = 3;  // Add userId field
-}
-
-message ListCommentsRequest {
-  string postId = 1;
+  string comment_id = 1;
 }
