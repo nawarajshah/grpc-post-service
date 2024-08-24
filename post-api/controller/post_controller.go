@@ -109,24 +109,29 @@ func (p *PostController) UpdatePost(ctx *gin.Context) {
 }
 
 func (p *PostController) DeletePost(ctx *gin.Context) {
-	// Extract userId from the context set by the AuthMiddleware
+	// Extract the PostId from the URL parameter
+	postId := ctx.Param("postId")
+
+	// Extract the userId from the context (set by middleware)
 	userId, exists := ctx.Get("userId")
 	if !exists {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
+	// Prepare the DeletePostRequest
 	req := &pb.DeletePostRequest{
-		PostId: ctx.Param("postId"),
+		PostId: postId,          // Set the PostId from the URL parameter
+		UserId: userId.(string), // Set the UserId from the context
 	}
 
 	// Call the service layer
-	res, err := p.PostService.DeletePost(context.WithValue(context.Background(), "userId", userId), req)
+	res, err := p.PostService.DeletePost(context.Background(), req)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Return the response with the user_id of the person who deleted the post
+	// Return the response
 	ctx.JSON(http.StatusOK, res)
 }

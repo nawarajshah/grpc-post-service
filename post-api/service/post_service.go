@@ -21,6 +21,7 @@ func NewPostService(client pb.PostServiceClient) PostService {
 }
 
 func (s *postService) CreatePost(ctx context.Context, req *pb.CreatePostRequest) (*pb.PostResponse, error) {
+
 	return s.client.CreatePost(ctx, req)
 }
 

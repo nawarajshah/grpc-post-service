@@ -3,56 +3,66 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
+	"github.com/nawarajshah/grpc-post-service/post-service/pkg/facade"
 	"time"
 
 	"github.com/nawarajshah/grpc-post-service/pb"
-	"github.com/nawarajshah/grpc-post-service/post-service/pkg/models"
-	"github.com/nawarajshah/grpc-post-service/post-service/pkg/repo"
 )
 
-type GrpcService struct {
+type PostServiceRpcImpl struct {
 	pb.UnimplementedPostServiceServer
-	PostRepo repo.PostRepository
+	postFacade facade.PostFacade
 }
 
 // NewPostServiceServer is a constructor for GrpcService
-func NewPostServiceServer(postRepo repo.PostRepository) *GrpcService {
-	return &GrpcService{
-		PostRepo: postRepo,
+func NewPostServiceRpc(postFacade facade.PostFacade) pb.PostServiceServer {
+	return PostServiceRpcImpl{
+		postFacade: postFacade,
 	}
 }
 
-func (s *GrpcService) CreatePost(ctx context.Context, req *pb.CreatePostRequest) (*pb.PostResponse, error) {
+func (s *PostServiceRpcImpl) CreatePost(ctx context.Context, req *pb.CreatePostRequest) (*pb.PostResponse, error) {
 	// Generate a unique post ID if one is not provided
 	//postID := req.Post.PostId
+
+	defer func() {
+		if err := recover(); err != nil {
+			// return error
+			//
+		}
+	}()
+	post, err := s.postFacade.CreatePost(ctx, req.Post)
 	//if postID == "" {
-	postID := uuid.New().String()
+	//postID := uuid.New().String()
+	////}
+	//
+	//post := &models.Post{
+	//	PostID:      postID,
+	//	Title:       req.Post.Title,
+	//	Description: req.Post.Description,
+	//	CreatedBy:   req.Post.UserId,
+	//	CreatedAt:   time.Now().Unix(),
+	//	UpdatedAt:   time.Now().Unix(),
+	//}
+	//
+	//err := s.PostRepo.Create(post)
+	//if err != nil {
+	//	return nil, fmt.Errorf("error creating post: %v", err)
 	//}
 
-	post := &models.Post{
-		PostID:      postID,
-		Title:       req.Post.Title,
-		Description: req.Post.Description,
-		CreatedBy:   req.Post.UserId,
-		CreatedAt:   time.Now().Unix(),
-		UpdatedAt:   time.Now().Unix(),
-	}
-
-	err := s.PostRepo.Create(post)
 	if err != nil {
-		return nil, fmt.Errorf("error creating post: %v", err)
+		//return nil, err
 	}
-
 	return &pb.PostResponse{
-		Post: &pb.Post{
-			PostId:      post.PostID,
-			Title:       post.Title,
-			Description: post.Description,
-			UserId:      post.CreatedBy,
-			CreatedAt:   post.CreatedAt,
-			UpdatedAt:   post.UpdatedAt,
-		},
+		Post: post,
+		//Post: &pb.Post{
+		//	PostId:      post.PostID,
+		//	Title:       post.Title,
+		//	Description: post.Description,
+		//	UserId:      post.CreatedBy,
+		//	CreatedAt:   post.CreatedAt,
+		//	UpdatedAt:   post.UpdatedAt,
+		//},
 	}, nil
 }
 
