@@ -6,6 +6,8 @@ import (
 
 	"github.com/nawarajshah/grpc-post-service/pb"
 	"github.com/nawarajshah/grpc-post-service/post-service/pkg/db"
+	"github.com/nawarajshah/grpc-post-service/post-service/pkg/endpoint"
+	"github.com/nawarajshah/grpc-post-service/post-service/pkg/facade"
 	"github.com/nawarajshah/grpc-post-service/post-service/pkg/repo"
 	"github.com/nawarajshah/grpc-post-service/post-service/pkg/service"
 	"google.golang.org/grpc"
@@ -23,13 +25,16 @@ func main() {
 	postRepo := repo.NewPostRepository(database)
 	commentRepo := repo.NewCommentRepository(database)
 
+	// Initialize facades
+	postFacade := facade.NewPostFacade(postRepo)
+
 	// Create a new gRPC server
 	grpcServer := grpc.NewServer()
 
 	// Initialize service servers
 	authService := service.NewAuthServiceServer(userRepo, verificationRepo)
-	postService := service.NewPostServiceServer(postRepo)
-	commentService := service.NewCommentServiceServer(commentRepo, postRepo) // Pass both repositories
+	postService := endpoint.NewPostServiceRpc(postFacade) // Use the new endpoint
+	commentService := service.NewCommentServiceServer(commentRepo, postRepo)
 
 	// Register the services with the gRPC server
 	pb.RegisterAuthServiceServer(grpcServer, authService)
