@@ -1,4 +1,4 @@
-package service
+package endpoint
 
 import (
 	"context"
@@ -10,6 +10,12 @@ import (
 type PostServiceRpcImpl struct {
 	pb.UnimplementedPostServiceServer
 	postFacade facade.PostFacade
+}
+
+func NewPostServiceRpc(postFacade facade.PostFacade) pb.PostServiceServer {
+	return &PostServiceRpcImpl{
+		postFacade: postFacade,
+	}
 }
 
 func (s *PostServiceRpcImpl) CreatePost(ctx context.Context, req *pb.CreatePostRequest) (*pb.PostResponse, error) {

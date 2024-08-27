@@ -53,16 +53,21 @@ func (p *PostController) CreatePost(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-func (c *PostController) GetPost(ctx *gin.Context) {
-	postID := ctx.Param("postId") // Use the correct parameter name
+func (p *PostController) GetPost(ctx *gin.Context) {
+	// Extract the PostId from the URL parameter
+	postID := ctx.Param("postId") // Correct parameter name
+
+	// Prepare the GetPostRequest
 	req := &pb.GetPostRequest{PostId: postID}
 
-	res, err := c.PostService.GetPost(context.Background(), req)
+	// Call the service layer
+	res, err := p.PostService.GetPost(context.Background(), req)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
 		return
 	}
 
+	// Return the response
 	ctx.JSON(http.StatusOK, res)
 }
 
